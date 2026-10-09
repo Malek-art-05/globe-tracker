@@ -21,6 +21,11 @@ const viewer = new Viewer('cesiumContainer', {
   fullscreenButton: false,
 });
 
+// Lock the camera: always look straight at the centre of the Earth
+const controller = viewer.scene.screenSpaceCameraController;
+controller.enableTilt = false;
+controller.enableLook = false;
+
 
 // day/night shading
 viewer.scene.globe.enableLighting = true; 
