@@ -7,3 +7,25 @@ html, body, #cesiumContainer {
   hidden; 
 }
 
+#panel {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#panel button {
+  padding: 8px 12px;
+  font-size: 14px sans-serif;
+  color: #fff;
+  background: rgba(20, 20, 30, 0.8);
+  border: 1px solid #555;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#panel button:hover {
+  background-color: rgba(60, 60, 90, 0.9);
+}
