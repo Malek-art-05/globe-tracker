@@ -25,7 +25,8 @@ const viewer = new Viewer('cesiumContainer', {
 const controller = viewer.scene.screenSpaceCameraController;
 controller.enableTilt = false;
 controller.enableLook = false;
-
+controller.maximumZoomDistance = 40000000; // can't zoom out further than 40,000 km
+controller.minimumZoomDistance = 1000;     // can't zoom in closer than 1 km above the ground
 
 // day/night shading
 viewer.scene.globe.enableLighting = true; 
