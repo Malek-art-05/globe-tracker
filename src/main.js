@@ -7,11 +7,15 @@ import 'cesium/Build/Cesium/Widgets/widgets.css';
 import './style.css';
 import { places, launchSites } from './places.js';
 
+import { loadSatellites } from './layers/satellites/source.js';
+import { addSatellites } from './layers/satellites/layer.js';
+
 Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
 
 const viewer = new Viewer('cesiumContainer', {
   terrain: Terrain.fromWorldTerrain(),
-  animations: false,
+  shouldAnimate: true,
+  animation: false,
   timeline: false,
   baseLayerPicker: false,
   geocoder: false,
@@ -58,7 +62,7 @@ for (const place of places) {
 for (const site of launchSites) {
   viewer.entities.add({
     name: site.name,
-    postion: Cartesian3.fromDegrees(site.lon, site.lat, 0),
+    position: Cartesian3.fromDegrees(site.lon, site.lat, 0),
     point: {
       pixelSize: 10,
       color: Color.ORANGE,
@@ -75,8 +79,22 @@ for (const site of launchSites) {
       style: LabelStyle.FILL_AND_OUTLINE,
       verticalOrigin: VerticalOrigin.BOTTOM,
       pixelOffset: new Cartesian2(0, -12),
+      heightReference: HeightReference.CLAMP_TO_GROUND,
       distanceDisplayCondition: new DistanceDisplayCondition(0, 5000000),
     },
     description: `<p>Launch site in ${site.country}.</p><p>Lat ${site.lat}, Lon ${site.lon}</p>`,
   });
 }
+
+// Load and show satellites
+async function startSatellites() {
+  try {
+    const satellites = await loadSatellites();
+    addSatellites(viewer, satellites);
+    console.log(`Showing ${satellites.length} satellites`);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+startSatellites();

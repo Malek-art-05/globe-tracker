@@ -5,6 +5,9 @@ const cesiumSource = 'node_modules/cesium/Build/Cesium';
 const cesiumBaseUrl = 'cesiumStatic';
 
 export default defineConfig({
+  worker: {
+    format: 'es',
+  },
   define: { CESIUM_BASE_URL: JSON.stringify(`/${cesiumBaseUrl}`) },
   plugins: [
     viteStaticCopy({

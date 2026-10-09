@@ -3,8 +3,7 @@ html, body, #cesiumContainer {
   height: 100%;
   margin: 0; 
   padding: 0;
-  overflow: 
-  hidden; 
+  overflow: hidden;
 }
 
 #panel {
@@ -18,7 +17,7 @@ html, body, #cesiumContainer {
 
 #panel button {
   padding: 8px 12px;
-  font-size: 14px sans-serif;
+  font: 14px sans-serif;
   color: #fff;
   background: rgba(20, 20, 30, 0.8);
   border: 1px solid #555;

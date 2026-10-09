@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "fetch:satellites": "node scripts/fetch-satellites.js"
   },
   "devDependencies": {
     "vite": "^8.3.0",
     "vite-plugin-static-copy": "^4.1.1"
   },
   "dependencies": {
-    "cesium": "^1.146.0"
+    "cesium": "^1.146.0",
+    "satellite.js": "^7.1.0"
   }
 }
