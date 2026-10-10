@@ -5,7 +5,6 @@ import {
 
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 import './style.css';
-import { places} from './places.js';
 
 import { loadSatellites } from './layers/satellites/source.js';
 import { addSatellites, typeOf, positionAt } from './layers/satellites/layer.js';
@@ -40,6 +39,7 @@ controller.minimumZoomDistance = 1;     // can't zoom in closer than 1 km above 
 // day/night shading
 viewer.scene.globe.enableLighting = true; 
 
+/*
 // Move camera to place
 function flyToPlace(place) {
   viewer.camera.flyTo({
@@ -47,21 +47,24 @@ function flyToPlace(place) {
     duration: 2,
   });
 }
+*/
 
 // Start looking at the first place in the list 
 viewer.camera.setView({
-  destination: Cartesian3.fromDegrees(places[0].lon, places[0].lat, places[0].height),
+  destination: Cartesian3.fromDegrees(-40, 25, 20000000), // Whole Earth
 });
 
 // Makeone button for each place
 const panel = document.getElementById('panel');
 
+/*
 for (const place of places) {
   const button = document.createElement('button');
   button.textContent = place.name;
   button.addEventListener('click', () => flyToPlace(place));
   panel.appendChild(button);
 }
+*/
 
 // Which kinds of object to show at start. Debris is off so Earth stays visible.
 const OBJECT_TYPES = [
