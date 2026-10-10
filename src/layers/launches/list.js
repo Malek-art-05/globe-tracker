@@ -22,10 +22,6 @@ export function showLaunchList(container, upcoming, onSelect) {
     .filter((launch) => new Date(launch.net).getTime() > now - 60 * 60 * 1000) // Filter out launches that are more than 1 hour in the past
     .sort((a, b) => new Date(a.net).getTime() - new Date(b.net).getTime())
     .slice(0, 10); // Show only the next 10 launches
-
-    const title = document.createElement('h3');
-    title.textContent = 'Upcoming Launches';
-    container.appendChild(title);
     
     if (soon.length === 0) {
         container.append('No upcoming launches. Run "npm run fetch:launches".');

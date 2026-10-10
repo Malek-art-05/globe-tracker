@@ -6,10 +6,14 @@ html, body, #cesiumContainer {
   overflow: hidden;
 }
 
-#panel {
+#controls{
   position: absolute;
   top: 12px;
   left: 12px;
+}
+
+#panel {
+  margin-top: 6px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -65,11 +69,6 @@ html, body, #cesiumContainer {
   color: #fff;
   background: rgba(20, 20, 30, 0.8);
   border-radius: 6px;
-}
-
-#launchList h3 {
-  margin: 0 0 6px;
-  font-size: 14px;
 }
 
 #launchList .launch {
@@ -135,4 +134,14 @@ html, body, #cesiumContainer {
 
 #search .search-result:hover {
   background: rgba(60, 60, 90, 0.9);
+}
+
+summary {
+  padding: 6px 10px;
+  font: bold 13px sans-serif;
+  color: #fff;
+  background: rgba(20, 20, 30, 0.8);
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
 }
