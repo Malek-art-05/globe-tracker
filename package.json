@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "fetch:satellites": "node scripts/fetch-satellites.js"
+    "fetch:satellites": "node --env-file=.env scripts/fetch-satellites.js"
   },
   "devDependencies": {
     "vite": "^8.3.0",

@@ -26,5 +26,5 @@ export const loadSatellites = async () => {
     }
   }
 
-  return satellites;
+  return {satellites, source: data.source ?? 'CelesTrak' };
 };
