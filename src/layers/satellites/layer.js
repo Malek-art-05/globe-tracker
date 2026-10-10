@@ -55,6 +55,12 @@ export function addSatellites(viewer, satellites) {
   const points = viewer.scene.primitives.add(new PointPrimitiveCollection());
   const hiddenTypes = new Set();
 
+  let orbitFilter = 'ALL'; // default to show all orbits
+// Return true if this satellite is visible given the current filters.
+  function isVisibleOrbit(sat) {
+    return !hiddenTypes.has(typeOf(sat)) && (orbitFilter === 'ALL' || orbitOf(sat) === orbitFilter);
+  }
+
   // Recalculate one satellite and move (or hide) its dot.
   function update(sat, date, gmst) {
     const position = positionAt(sat.satrec, date, gmst);
@@ -66,10 +72,16 @@ export function addSatellites(viewer, satellites) {
     }
   }
 
-  // 1. One point per satellite. `id` lets a click find the satellite again.
+  function refresh(sat, date, gmst) {
+    if (isVisibleOrbit(sat)) update(sat, date, gmst);
+    else sat.point.show = false;
+  }
+
+  // One point per satellite. `id` lets a click find the satellite again.
   const now = new Date();
   const gmst = gstime(now);
   for (const sat of satellites) {
+    sat.orbit = orbitOf(sat);
     sat.point = points.add({
       position: Cartesian3.ZERO,
       show: false,
@@ -81,8 +93,8 @@ export function addSatellites(viewer, satellites) {
     update(sat, now, gmst);
   }
 
-  // 2. Every frame, recalculate one slice of the satellites (skipping hidden types).
-  //    The whole set is refreshed about once per second.
+  // Every frame, recalculate one slice of the satellites (skipping hidden types).
+  // The whole set is refreshed about once per second.
   const perFrame = Math.ceil(satellites.length / FRAMES_PER_SWEEP);
   let next = 0;
 
@@ -93,11 +105,11 @@ export function addSatellites(viewer, satellites) {
     for (let i = 0; i < perFrame; i++) {
       const sat = satellites[next];
       next = (next + 1) % satellites.length;
-      if (!hiddenTypes.has(typeOf(sat))) update(sat, date, frameGmst);
+      if (isVisibleOrbit(sat)) update(sat, date, frameGmst);
     }
   });
 
-  // 3. One reusable "selected" entity: label + info box for the clicked satellite only.
+  // One reusable "selected" entity: label + info box for the clicked satellite only.
   const selected = viewer.entities.add({
     show: false,
     point: { pixelSize: 9, color: Color.YELLOW, outlineColor: Color.BLACK, outlineWidth: 2 },
@@ -135,10 +147,25 @@ export function addSatellites(viewer, satellites) {
       const date = JulianDate.toDate(viewer.clock.currentTime);
       const typeGmst = gstime(date);
       for (const sat of satellites) {
-        if (typeOf(sat) !== type) continue;
-        if (visible) update(sat, date, typeGmst);
-        else sat.point.show = false;
+       if (typeOf(sat) === type) refresh(sat, date, typeGmst);  
       }
     },
+
+    setOrbitFilter(orbit) {
+      orbitFilter = orbit;
+      const date = JulianDate.toDate(viewer.clock.currentTime);
+      const orbitGmst = gstime(date);
+      for (const sat of satellites) refresh(sat, date, orbitGmst);
+    }
   };
 }
+
+//which kind of orbit? based on mean motion and eccentricity
+  export function orbitOf(sat) {
+    const perDay = sat.record.MEAN_MOTION; // orbits per day
+    const ecc = sat.record.ECCENTRICITY;
+    if (ecc > 0.25) return 'HEO'; // high Earth orbit
+    if (perDay > 11.25) return 'LEO'; // low Earth orbit
+    if (perDay > 0.99 && perDay < 1.01 && ecc <0.01) return 'GEO'; // geostationary
+    return 'MEO'; // medium Earth orbit
+  }

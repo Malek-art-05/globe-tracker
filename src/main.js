@@ -1,5 +1,5 @@
 import {
-  Ion, Viewer, Terrain, Cartesian3, Cartesian2, Color,
+  Ion, Viewer, Terrain, Cartesian3, Cartesian2, Cartographic, Color, JulianDate,
   HeightReference, LabelStyle, VerticalOrigin, DistanceDisplayCondition, Credit, Entity, ScreenSpaceEventType,
 } from 'cesium';
 
@@ -8,7 +8,8 @@ import './style.css';
 import { places} from './places.js';
 
 import { loadSatellites } from './layers/satellites/source.js';
-import { addSatellites, typeOf } from './layers/satellites/layer.js';
+import { addSatellites, typeOf, positionAt } from './layers/satellites/layer.js';
+import { addSatelliteSearch } from './layers/satellites/search.js';
 
 import { loadLaunches } from './layers/launches/source.js';
 import { addLaunchPads } from './layers/launches/layer.js';
@@ -94,6 +95,38 @@ async function startSatellites() {
       satelliteLayer.setTypeVisible(type, on);
     }
 
+    const ORBITS = [
+      { value: 'ALL', label: 'All orbits' },
+      { value: 'LEO', label: 'Low Earth orbit (LEO)' },
+      { value: 'MEO', label: 'Medium Earth orbit (MEO)' },
+      { value: 'GEO', label: 'Geostationary orbit (GEO)' },
+      { value: 'HEO', label: 'High Earth orbit (HEO)' },
+    ];
+    const orbitSelect = document.createElement('select');
+    orbitSelect.className = 'orbit-select';
+    for (const { value, label} of ORBITS) {
+      const count = value === 'ALL'
+        ? satellites.length
+        : satellites.filter((sat) => sat.orbit === value).length;
+      orbitSelect.add(new Option(`${label} (${count.toLocaleString()})`, value));
+    }
+
+    orbitSelect.addEventListener('change', () => satelliteLayer.setOrbitFilter(orbitSelect.value));
+    panel.appendChild(orbitSelect);
+
+ // Search: pick a result to select that satellite and fly to it.
+    addSatelliteSearch(document.getElementById('search'), satellites, (sat) => {
+      viewer.selectedEntity = satelliteLayer.select(sat);
+
+      const position = positionAt(sat.satrec, JulianDate.toDate(viewer.clock.currentTime));
+      if (!position) return; // orbit maths failed, nothing to fly to
+      const spot = Cartographic.fromCartesian(position);
+      viewer.camera.flyTo({
+        destination: Cartesian3.fromRadians(spot.longitude, spot.latitude, spot.height + 3000000),
+        duration: 2,
+      });
+    });
+
     // Clicks: launch markers are entities, satellites are fast points.
     viewer.screenSpaceEventHandler.setInputAction((click) => {
       const picked = viewer.scene.pick(click.position);
@@ -142,6 +175,7 @@ async function startSatellites() {
     console.error(error);
   }
 }
+
 
 startSatellites();
 

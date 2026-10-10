@@ -91,3 +91,48 @@ html, body, #cesiumContainer {
   color: #7cfc00;
   font-family: monospace;
 }
+
+#panel .orbit-select {
+  padding: 6px;
+  font: 13px sans-serif;
+  color: #fff;
+  background: rgba(20, 20, 30, 0.8);
+  border: 1px solid #555;
+  border-radius: 6px;
+}
+
+#search {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  font: 13px sans-serif;
+}
+
+#search .search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font: 14px sans-serif;
+  color: #fff;
+  background: rgba(20, 20, 30, 0.85);
+  border: 1px solid #555;
+  border-radius: 6px;
+}
+
+#search .search-results {
+  margin-top: 4px;
+  color: #fff;
+  background: rgba(20, 20, 30, 0.9);
+  border-radius: 6px;
+}
+
+#search .search-result {
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+#search .search-result:hover {
+  background: rgba(60, 60, 90, 0.9);
+}
