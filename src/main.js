@@ -5,10 +5,13 @@ import {
 
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 import './style.css';
-import { places, launchSites } from './places.js';
+import { places} from './places.js';
 
 import { loadSatellites } from './layers/satellites/source.js';
 import { addSatellites, typeOf } from './layers/satellites/layer.js';
+
+import { loadLaunches } from './layers/launches/source.js';
+import { addLaunchPads } from './layers/launches/layer.js';
 
 Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
 
@@ -29,8 +32,8 @@ const viewer = new Viewer('cesiumContainer', {
 const controller = viewer.scene.screenSpaceCameraController;
 controller.enableTilt = false;
 controller.enableLook = false;
-controller.maximumZoomDistance = 100000000; // can't zoom out further than 40,000 km
-controller.minimumZoomDistance = 1000;     // can't zoom in closer than 1 km above the ground
+controller.maximumZoomDistance = 150000000; // can't zoom out further than 40,000 km
+controller.minimumZoomDistance = 1;     // can't zoom in closer than 1 km above the ground
 
 // day/night shading
 viewer.scene.globe.enableLighting = true; 
@@ -56,34 +59,6 @@ for (const place of places) {
   button.textContent = place.name;
   button.addEventListener('click', () => flyToPlace(place));
   panel.appendChild(button);
-}
-
-//add launch site markers
-for (const site of launchSites) {
-  viewer.entities.add({
-    name: site.name,
-    position: Cartesian3.fromDegrees(site.lon, site.lat, 0),
-    point: {
-      pixelSize: 10,
-      color: Color.ORANGE,
-      outlineColor: Color.BLACK,
-      outlineWidth: 2,
-      heightReference: HeightReference.CLAMP_TO_GROUND,
-    },
-    label:{
-      text: site.name,
-      font: '14pt sans-serif',
-      fillColor: Color.WHITE,
-      outlineColor: Color.BLACK,
-      outlineWidth: 3,
-      style: LabelStyle.FILL_AND_OUTLINE,
-      verticalOrigin: VerticalOrigin.BOTTOM,
-      pixelOffset: new Cartesian2(0, -12),
-      heightReference: HeightReference.CLAMP_TO_GROUND,
-      distanceDisplayCondition: new DistanceDisplayCondition(0, 5000000),
-    },
-    description: `<p>Launch site in ${site.country}.</p><p>Lat ${site.lat}, Lon ${site.lon}</p>`,
-  });
 }
 
 // Which kinds of object to show at start. Debris is off so Earth stays visible.
@@ -131,9 +106,54 @@ async function startSatellites() {
         viewer.selectedEntity = undefined;
       }
     }, ScreenSpaceEventType.LEFT_CLICK);
+
+    // Show a tooltip when the mouse is over a satellite. Hide it when the mouse leaves the globe area.
+    const tooltip = document.getElementById('tooltip');
+    const HOVER_MAX_DISTANCE = 5000000; // 5,000 km
+    let lastPickTime = 0;
+    
+    viewer.screenSpaceEventHandler.setInputAction((movement) => {
+      const now = performance.now();
+      if (now - lastPickTime < 100) return; // throttle to 10 fps
+      lastPickTime = now;
+
+      const picked = viewer.scene.pick(movement.endPosition, 15, 15);// 15 pixel tolerance
+      const sat = picked?.id;
+      const closeEnough = sat?.satrec &&
+     Cartesian3.distance(viewer.camera.positionWC, sat.point.position) < HOVER_MAX_DISTANCE;
+
+      if (closeEnough) {
+        tooltip.textContent = sat.name;
+        tooltip.style.display = 'block';
+        tooltip.style.left = `${movement.endPosition.x + 10}px`;
+        tooltip.style.top = `${movement.endPosition.y + 10}px`;
+      } else {
+        tooltip.style.display = 'none';
+      }
+    }, ScreenSpaceEventType.MOUSE_MOVE);
+
+    //Cesium only reports movement over the globe so hide the tooltip if the mouse leaves the globe area.
+    viewer.canvas.addEventListener('mouseleave', () => {
+      tooltip.style.display = 'none';
+    });
+
   } catch (error) {
     console.error(error);
   }
 }
 
 startSatellites();
+
+// Load and show launches
+async function startLaunches() {
+  try {
+    const {upcoming, previous, source} = await loadLaunches();
+    const pads = addLaunchPads(viewer, upcoming, previous);
+    viewer.creditDisplay.addStaticCredit(new Credit(`Launch data: ${source}`));
+    console.log(`Showing ${pads.length} launch pads (${upcoming.length} upcoming, ${previous.length} recent launches)`);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+startLaunches();

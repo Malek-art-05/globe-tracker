@@ -40,3 +40,15 @@ html, body, #cesiumContainer {
   border-radius: 6px;
   cursor: pointer;
 }
+
+#tooltip {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  padding: 4px 8px;
+  font: 13px sans-serif;
+  color: #fff;
+  background: rgba(20, 20, 30, 0.85);
+  border-radius: 4px;
+  white-space: nowrap;
+}
