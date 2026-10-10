@@ -73,7 +73,7 @@ export function addLaunchPads(viewer, upcoming, previous) {
   for (const pad of pads) {
     const active = pad.upcoming.length > 0;
 
-    viewer.entities.add({
+    pad.entity = viewer.entities.add({
       name: pad.name,
       position: Cartesian3.fromDegrees(pad.lon, pad.lat),
       point: {

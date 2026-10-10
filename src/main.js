@@ -12,6 +12,7 @@ import { addSatellites, typeOf } from './layers/satellites/layer.js';
 
 import { loadLaunches } from './layers/launches/source.js';
 import { addLaunchPads } from './layers/launches/layer.js';
+import { showLaunchList } from './layers/launches/list.js';
 
 Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
 
@@ -150,6 +151,17 @@ async function startLaunches() {
     const {upcoming, previous, source} = await loadLaunches();
     const pads = addLaunchPads(viewer, upcoming, previous);
     viewer.creditDisplay.addStaticCredit(new Credit(`Launch data: ${source}`));
+
+    // launch list: clicking a launch in the list flies to its pad and shows the info box.
+    const padByKey = new Map(pads.map((pad) => [`${pad.lat},${pad.lon}`, pad]));
+    showLaunchList(document.getElementById('launchList'), upcoming, (launch) => {
+      viewer.camera.flyTo({
+        destination: Cartesian3.fromDegrees(launch.lon, launch.lat, 2000000),
+        duration: 2,
+      });
+      const pad = padByKey.get(`${launch.lat},${launch.lon}`);
+      if (pad) viewer.selectedEntity = pad.entity;
+    });
     console.log(`Showing ${pads.length} launch pads (${upcoming.length} upcoming, ${previous.length} recent launches)`);
   } catch (error) {
     console.error(error);

@@ -52,3 +52,42 @@ html, body, #cesiumContainer {
   border-radius: 4px;
   white-space: nowrap;
 }
+
+#launchList {
+  position: absolute;
+  left: 12px;
+  bottom: 40px;
+  width: 280px;
+  max-height: 35vh;
+  overflow-y: auto;
+  padding: 8px;
+  font: 13px sans-serif;
+  color: #fff;
+  background: rgba(20, 20, 30, 0.8);
+  border-radius: 6px;
+}
+
+#launchList h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+#launchList .launch {
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#launchList .launch:hover {
+  background-color: rgba(60, 60, 90, 0.9);
+}
+
+#launchList .launch-details {
+  color: #aaa;
+  font-size: 12px;
+}
+
+#launchList .launch-countdown {
+  color: #7cfc00;
+  font-family: monospace;
+}
