@@ -13,5 +13,5 @@ export async function loadLaunches() {
     const previousIds = new Set(data.previous.map((launch) => launch.id));
     const upcoming = data.upcoming.filter((launch) => !previousIds.has(launch.id));
 
-   return { upcoming, previous: data.previous, source: data.source };
+    return { upcoming, previous: data.previous, source: data.source };
 }

@@ -216,7 +216,9 @@ const AIRCRAFT_MAX_HEIGHT = 3000000; // only load when the camera is below 3,000
 
 function startAircraft() {
   const aircraftLayer = addAircraftLayer(viewer);
-  viewer.creditDisplay.addStaticCredit(new Credit('Aircraft data: airplanes.live'));
+  viewer.creditDisplay.addStaticCredit(
+    new Credit('<a href="https://adsb.fi" target="_blank">Aircraft data: adsb.fi</a>'),
+  );
 
   // Checkbox to show/hide aircraft, with a status text next to it.
   const row = document.createElement('label');

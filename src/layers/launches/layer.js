@@ -1,23 +1,23 @@
 import {
-    Cartesian2, Cartesian3, Color, DistanceDisplayCondition, HeightReference, LabelStyle, VerticalOrigin
+  Cartesian2, Cartesian3, Color, DistanceDisplayCondition, HeightReference, LabelStyle, VerticalOrigin
 } from 'cesium';
 
 // Add + label per launch site. Positions are static, so we don't need to recalculate every frame.
 function formatTime(isoTime) {
-    return new Date(isoTime).toLocaleString(undefined, { 
-      month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric'
-    });
+  return new Date(isoTime).toLocaleString(undefined, {
+    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric'
+  });
 }
 
 // Add + label per launch site. Positions are static, so we don't need to recalculate every frame.
 function launchRow(launch) {
-   return `<tr><td>${formatTime(launch.net)}</td><td>${launch.name}</td><td>${launch.status}</td></tr>`;
+  return `<tr><td>${formatTime(launch.net)}</td><td>${launch.name}</td><td>${launch.status}</td></tr>`;
 }
 
 // HTML shown in the info box when you click a launch site.
 function describePad(pad) {
-    const next = pad.upcoming[0];
-    let html = `<p>${pad.location ?? ''}</p>`;
+  const next = pad.upcoming[0];
+  let html = `<p>${pad.location ?? ''}</p>`;
 
   if (next) {
     html += `

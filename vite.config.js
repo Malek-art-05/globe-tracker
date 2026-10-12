@@ -8,24 +8,27 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/aircraft': {
-        target: 'https://api.airplanes.live',
+        target: 'https://opendata.adsb.fi',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/aircraft/, '/v2'),
+        // /api/aircraft/point/LAT/LON/RADIUS  ->  /api/v3/lat/LAT/lon/LON/dist/RADIUS
+        rewrite: (path) =>
+          path.replace(/^\/api\/aircraft\/point\/([^/]+)\/([^/]+)\/([^/]+)/, '/api/v3/lat/$1/lon/$2/dist/$3'),
       },
     },
   },
-  worker: {
-    format: 'es',
-  },
-  define: { CESIUM_BASE_URL: JSON.stringify(`/${cesiumBaseUrl}`) },
-  plugins: [
-    viteStaticCopy({
-      targets: [
-        { src: `${cesiumSource}/ThirdParty`, dest: cesiumBaseUrl, rename: { stripBase: 4 } },
-        { src: `${cesiumSource}/Workers`, dest: cesiumBaseUrl, rename: { stripBase: 4 } },
-        { src: `${cesiumSource}/Assets`, dest: cesiumBaseUrl, rename: { stripBase: 4 } },
-        { src: `${cesiumSource}/Widgets`, dest: cesiumBaseUrl, rename: { stripBase: 4 } },
+
+    worker: {
+        format: 'es',
+      },
+      define: { CESIUM_BASE_URL: JSON.stringify(`/${cesiumBaseUrl}`) },
+      plugins: [
+        viteStaticCopy({
+          targets: [
+            { src: `${cesiumSource}/ThirdParty`, dest: cesiumBaseUrl, rename: { stripBase: 4 } },
+            { src: `${cesiumSource}/Workers`, dest: cesiumBaseUrl, rename: { stripBase: 4 } },
+            { src: `${cesiumSource}/Assets`, dest: cesiumBaseUrl, rename: { stripBase: 4 } },
+            { src: `${cesiumSource}/Widgets`, dest: cesiumBaseUrl, rename: { stripBase: 4 } },
+          ],
+        }),
       ],
-    }),
-  ],
-});
+    });
