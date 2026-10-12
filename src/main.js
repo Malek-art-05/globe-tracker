@@ -1,5 +1,5 @@
 import {
-  Ion, Viewer, Terrain, Cartesian3, Cartesian2, Cartographic, Color, JulianDate,
+  Ion, Viewer, Terrain, Math as CesiumMath, Cartesian3, Cartesian2, Cartographic, Color, JulianDate,
   HeightReference, LabelStyle, VerticalOrigin, DistanceDisplayCondition, Credit, Entity, ScreenSpaceEventType,
 } from 'cesium';
 
@@ -13,6 +13,9 @@ import { addSatelliteSearch } from './layers/satellites/search.js';
 import { loadLaunches } from './layers/launches/source.js';
 import { addLaunchPads } from './layers/launches/layer.js';
 import { showLaunchList } from './layers/launches/list.js';
+
+import { loadAircraftNear } from './layers/aircraft/source.js';
+import { addAircraftLayer } from './layers/aircraft/layer.js';
 
 Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
 
@@ -37,7 +40,7 @@ controller.maximumZoomDistance = 150000000; // can't zoom out further than 40,00
 controller.minimumZoomDistance = 1;     // can't zoom in closer than 1 km above the ground
 
 // day/night shading
-viewer.scene.globe.enableLighting = true; 
+viewer.scene.globe.enableLighting = true;
 
 /*
 // Move camera to place
@@ -107,7 +110,7 @@ async function startSatellites() {
     ];
     const orbitSelect = document.createElement('select');
     orbitSelect.className = 'orbit-select';
-    for (const { value, label} of ORBITS) {
+    for (const { value, label } of ORBITS) {
       const count = value === 'ALL'
         ? satellites.length
         : satellites.filter((sat) => sat.orbit === value).length;
@@ -117,7 +120,7 @@ async function startSatellites() {
     orbitSelect.addEventListener('change', () => satelliteLayer.setOrbitFilter(orbitSelect.value));
     panel.appendChild(orbitSelect);
 
- // Search: pick a result to select that satellite and fly to it.
+    // Search: pick a result to select that satellite and fly to it.
     addSatelliteSearch(document.getElementById('search'), satellites, (sat) => {
       viewer.selectedEntity = satelliteLayer.select(sat);
 
@@ -148,7 +151,7 @@ async function startSatellites() {
     const tooltip = document.getElementById('tooltip');
     const HOVER_MAX_DISTANCE = 5000000; // 5,000 km
     let lastPickTime = 0;
-    
+
     viewer.screenSpaceEventHandler.setInputAction((movement) => {
       const now = performance.now();
       if (now - lastPickTime < 100) return; // throttle to 10 fps
@@ -157,7 +160,7 @@ async function startSatellites() {
       const picked = viewer.scene.pick(movement.endPosition, 15, 15);// 15 pixel tolerance
       const sat = picked?.id;
       const closeEnough = sat?.satrec &&
-     Cartesian3.distance(viewer.camera.positionWC, sat.point.position) < HOVER_MAX_DISTANCE;
+        Cartesian3.distance(viewer.camera.positionWC, sat.point.position) < HOVER_MAX_DISTANCE;
 
       if (closeEnough) {
         tooltip.textContent = sat.name;
@@ -185,7 +188,7 @@ startSatellites();
 // Load and show launches
 async function startLaunches() {
   try {
-    const {upcoming, previous, source} = await loadLaunches();
+    const { upcoming, previous, source } = await loadLaunches();
     const pads = addLaunchPads(viewer, upcoming, previous);
     viewer.creditDisplay.addStaticCredit(new Credit(`Launch data: ${source}`));
 
@@ -206,3 +209,63 @@ async function startLaunches() {
 }
 
 startLaunches();
+
+// Aircraft: fetch planes around the point the camera looks at, every 10 seconds.
+const AIRCRAFT_REFRESH_MS = 10000;
+const AIRCRAFT_MAX_HEIGHT = 3000000; // only load when the camera is below 3,000 km
+
+function startAircraft() {
+  const aircraftLayer = addAircraftLayer(viewer);
+  viewer.creditDisplay.addStaticCredit(new Credit('Aircraft data: airplanes.live'));
+
+  // Checkbox to show/hide aircraft, with a status text next to it.
+  const row = document.createElement('label');
+  row.className = 'filter';
+  const box = document.createElement('input');
+  box.type = 'checkbox';
+  box.checked = true;
+  const status = document.createElement('span');
+  status.textContent = 'Aircraft';
+  row.append(box, status);
+  panel.appendChild(row);
+
+  let loading = false;    // true while a request is on its way
+  let lastFetchTime = 0;  // when the last request started
+
+  async function refresh() {
+    if (!box.checked || loading) return;
+    if (performance.now() - lastFetchTime < 2000) return; // API allows 1 request per second
+
+    const camera = viewer.camera.positionCartographic;
+    if (camera.height > AIRCRAFT_MAX_HEIGHT) {
+      aircraftLayer.setAircraft([]);
+      status.textContent = 'Aircraft (zoom in to load)';
+      return;
+    }
+
+    loading = true;
+    lastFetchTime = performance.now();
+    try {
+      const lat = CesiumMath.toDegrees(camera.latitude);
+      const lon = CesiumMath.toDegrees(camera.longitude);
+      const list = await loadAircraftNear(lat, lon);
+      aircraftLayer.setAircraft(list);
+      status.textContent = `Aircraft (${list.length})`;
+    } catch (error) {
+      console.error(error);
+      status.textContent = 'Aircraft (unavailable)';
+    } finally {
+      loading = false;
+    }
+  }
+
+  box.addEventListener('change', () => {
+    aircraftLayer.setVisible(box.checked);
+    refresh();
+  });
+  viewer.camera.moveEnd.addEventListener(refresh); // load new area after you move
+  setInterval(refresh, AIRCRAFT_REFRESH_MS);      // keep positions fresh
+  refresh();
+}
+
+startAircraft();

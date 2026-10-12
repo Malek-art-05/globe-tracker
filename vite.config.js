@@ -5,6 +5,15 @@ const cesiumSource = 'node_modules/cesium/Build/Cesium';
 const cesiumBaseUrl = 'cesiumStatic';
 
 export default defineConfig({
+  server: {
+    proxy: {
+      '/api/aircraft': {
+        target: 'https://api.airplanes.live',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/aircraft/, '/v2'),
+      },
+    },
+  },
   worker: {
     format: 'es',
   },

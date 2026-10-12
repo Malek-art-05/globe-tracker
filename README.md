@@ -13,7 +13,7 @@ Built with JavaScript, Vite and CesiumJS as a learn-by-building project.
 - **Filters** to show or hide satellites, rocket bodies, debris and unknown objects
 - **Hover** a satellite to see its name, **click** it for details (type, country, launch date, inclination, orbit period)
 - **Launch pads** for upcoming and recent launches from Launch Library 2. Green pads have a launch coming up; click one for its schedule
-- **Camera locked** to orbit around Earth, with fly-to buttons for a few places
+- **Camera locked** to orbit around Earth
 
 ## Tech stack
 
